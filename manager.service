@@ -1,0 +1,16 @@
+[Unit]
+Description=Minecraft Server Manager
+Documentation=
+
+Wants=network.target
+After=network.target
+
+[Service]
+Type=simple
+KillMode=none
+SuccessExitStatus=0 1
+ExecStart={path}/venv/bin/python {path}/manager.py
+
+[Install]
+WantedBy=multi-user.target
+
