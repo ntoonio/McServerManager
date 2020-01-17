@@ -1,0 +1,10 @@
+.DS_Store
+
+venv/
+.vscode/
+
+*.log
+
+mc_servers_config.json
+Servers/
+
