@@ -10,8 +10,8 @@ Type=simple
 KillMode=none
 SuccessExitStatus=0 1
 WorkingDirectory={server_path}
-ExecStart=/usr/bin/java -Xmx1024M -Xms1024M -jar {server_path}/server.jar --noconsole
-ExecStop={path}/venv/bin/python stop_server.py {rcon_port} {rcon_password}
+ExecStart=/usr/bin/java -Xmx1024M -Xms1024M -jar {server_path}server.jar nogui
+ExecStop={path}venv/bin/python {path}stop_server.py {rcon_port} {rcon_password}
 
 [Install]
 WantedBy=multi-user.target

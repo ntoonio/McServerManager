@@ -7,12 +7,12 @@ def main():
 		print("Usage: {port} {password}")
 		return
 
-	port = sys.argv[0]
-	password = sys.argv[1]
+	port = int(sys.argv[1])
+	password = sys.argv[2]
 
 	with MCRcon("127.0.0.1", password, port=port) as mcr:
 
-		warnCommand = "/tellraw @a [\"[\",{\"text\":\"McServerManager\",\"color\":\"blue\"},\"]: Server will shut down in \",{\"text\":\"10\",\"color\":\"red\"},\" seconds for update to \",{\"text\":\"1.2.5\",\"color\":\"green\"}]"
+		warnCommand = "/tellraw @a [\"[\",{\"text\":\"McServerManager\",\"color\":\"blue\"},\"]: Server will shut down in \",{\"text\":\"10\",\"color\":\"red\"},\" seconds\"]"
 		mcr.command(warnCommand)
 
 		time.sleep(10)

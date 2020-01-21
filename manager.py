@@ -13,6 +13,8 @@ Version alternatives:
 
 VERSION_MANIFEST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json"
 
+SYSTEMD_PATH = "/etc/system/systemd/"
+
 import json
 import requests
 import argparse
@@ -24,6 +26,7 @@ import shutil
 import datetime
 import time
 import math
+import string
 
 PATH = os.path.dirname(os.path.abspath(__file__)) + "/"
 
@@ -152,6 +155,17 @@ def getVersionInManifest(s):
 				return v
 		return False
 
+def downloadFile(url, fileName):
+	with requests.get(url, stream=True) as r:
+		r.raise_for_status()
+		with open(fileName, "wb") as f:
+			for chunk in r.iter_content(chunk_size=8192): 
+				if chunk: # filter out keep-alive new chunks
+					f.write(chunk)
+
+def getServerServiceName(name):
+	 return "".join([x for x in name.replace(" ", "_") if x in string.ascii_letters + "0123456789-_"]).lower()
+
 def install(v, toInstall):
 	# Get the server download url
 	rVersionManifest = requests.get(v["url"])
@@ -171,13 +185,12 @@ def install(v, toInstall):
 	logging.info("Downloading version " + versionId)
 
 	fileName = downloadDir + versionId.replace(".", "_") + ".jar"
-	urllib.request.urlretrieve(serverDownloadURL, fileName)
+	downloadFile(serverDownloadURL, fileName)
 
-	# Remove the old "server.jar" at the server locations and copy the new to replace it
 	for server in toInstall:
 		serverPath = server["location"]
 
-		if not os.path.exists(serverPath) or True:
+		if not os.path.exists(serverPath):
 			os.makedirs(serverPath)
 
 			# If the path doesn't exist it means that this is a new server
@@ -199,10 +212,17 @@ def install(v, toInstall):
 			keys = [("name", server["name"]), ("server_path", serverPath), ("path", PATH), ("rcon_port", server["rcon.port"]), ("rcon_password", server["rcon.password"])]
 
 			for k in keys:
-				template.replace("{" + k[0] + "}", k[1])
+				template = template.replace("{" + k[0] + "}", k[1])
 
-			with open("/etc/systemd/system/mc_server_" + server["name"] + ".service", "w") as f:
+			serverServiceName = getServerServiceName(server["name"])
+
+			with open("/etc/systemd/system/mc_server_" + serverServiceName + ".service", "w") as f:
 				f.write(template)
+
+			os.system("systemctl daemon-reload")
+			os.system("systemctl enable mc_server_{}".format(serverServiceName))
+		
+		os.system("systemctl stop mc_server_" + getServerServiceName(server["name"]))
 
 		# Remove old "server.jar"
 		try:
@@ -222,6 +242,9 @@ def install(v, toInstall):
 			f.write(versionId)
 
 		logging.debug("Wrote versionfile '{}'".format(serverPath + "mc_version.txt"))
+		logging.debug("Starting server '{}'".format(server["name"]))
+
+		os.system("systemctl start mc_server_" + getServerServiceName(server["name"]))
 
 	os.remove(fileName)
 	os.removedirs(downloadDir)
