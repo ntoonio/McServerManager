@@ -193,18 +193,19 @@ def install(v, toInstall):
 		if not os.path.exists(serverPath):
 			os.makedirs(serverPath)
 
+		if not os.path.exists(serverPath + "mc_version.txt"):
 			# If the path doesn't exist it means that this is a new server
-			# Create new server.properties from server config
-			with open(serverPath + "server.properties", "w") as f:
-				gamePort = "25565" if "port" not in server else server["port"]
-				rconPort = server["rcon.port"]
-				rconPassword = server["rcon.password"]
+			
+			# Create new server.properties. If it already exist it means that the server is not new, but new to the manager since mc_version didn't exist
+			if not os.path.exists(serverPath + "server.properties"):			
+				with open(serverPath + "server.properties", "w") as f:
+					gamePort = "25565" if "port" not in server else server["port"]
+					rconPort = server["rcon.port"]
+					rconPassword = server["rcon.password"]
 
-				f.write("port={}\nrcon.port={}\nrcon.password={}\nenable-rcon=True".format(gamePort, rconPort, rconPassword))
+					f.write("port={}\nrcon.port={}\nrcon.password={}\nenable-rcon=True".format(gamePort, rconPort, rconPassword))
 
-			logging.info("Wrote new server.properties at '{}'".format(serverPath + "server.properties"))
-
-			# /etc/systemd/system/alfons.service
+				logging.info("Wrote new server.properties at '{}'".format(serverPath + "server.properties"))
 
 			with open(PATH + "template.service") as f:
 				template = f.read()
