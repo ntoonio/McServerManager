@@ -4,6 +4,7 @@ venv/
 .vscode/
 
 *.log
+_*
 
 mc_servers_config.json
 Servers/
